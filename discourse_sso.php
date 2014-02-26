@@ -8,6 +8,7 @@ class Discourse_SSO {
 	}
 	
 	public function validate($payload, $sig) {
+		$payload = urldecode($payload);
 		if(hash_hmac("sha256", $payload, $this->sso_secret) === $sig) {
 			$query = array();
 			parse_str(base64_decode($payload), $query);
