@@ -8,43 +8,62 @@ For more information on the SSO settings in Discourse, visit <https://meta.disco
 
 ### How to use the class
 
+Notes:
 
-Simply include the file and make an instance of the class, providing the SSO secret defined in Discourse
+ - The sso_secret can be anything. Make it long and make sure it's the same on Discourse and your site.
+ - The `$user_id` should be your database's unique column in your user table.
+ - If you aren't using PDO, you should be. But that's out of scope here ;)
+
+Here is a template for using the class:
+
 ```php
+<?php
 include 'discourse_sso.php';
 $sso = new Discourse_SSO("-your-sso_secret-goes-here-");
-```
 
-To validate incoming logins, you can do:
-```php
 $payload = $_GET['sso'];
 $sig = $_GET['sig'];
-if($sso->validate($payload,$sig)) {
-	// vaild
+if (!($sso->validate($payload,$sig))) {
+    // invaild, deny
+    header("HTTP/1.1 403 Forbidden");
+    echo("Bad SSO request");
+    die();
 }
-```
 
-
-To extract the nonce(the little piece of data that identifies the login, read more in the above link), use:
-```php
 $nonce = $sso->getNonce($payload);
-```
 
+/*
+ * Insert your user authentication code here.
+ */
 
-At last, to produce the query string that is to be sent back to discourse, do:
-```php
+// BEGIN your site's auth code
+
+// ...
+
+// Fill these variables in from your DB
+
+$user_id = ...; // Remember - this can be *anything*, as long as you keep it consistent!
+$email = ...;
+// These two are optional - feel free to delete them from the array() below
+// If you do, Discourse will generate suggestions from the provided email.
+$suggested_username = ...;
+$suggested_full_name = ...;
+
+// END your auth code
+
 $userparams = array(
-	// Required, will throw exception otherwise
-	"nonce" => $nonce,
-	"external_id" => "some user id here",
-	"email" => "some user email",
-	// Optional
-	"username" => "some username",
-	"name" => "some real name"
+    "nonce" => $nonce,
+    "external_id" => $user_id,
+    "email" => $email,
+
+    // Optional - feel free to delete these two
+    "username" => $suggested_username,
+    "name" => $suggested_full_name
 );
 $q = $sso->buildLoginString($userparams);
+header('Location: http://discourse.example.com/session/sso_login?' . $q);
 
-// To send the data back, do:
-// header('Location: http://discourse.example.com/session/sso_login?' . $q);
-// or similar
+exit(0);
+
+?>
 ```
