@@ -20,6 +20,9 @@ class Discourse_SSO {
 	}
 	
 	public function loginstring($params) {
+		if(!isset($params["external_id"])) {
+			throw new Exception("Missing required parameter 'external_id'");
+		}
 		$params['nonce'] = $this->nonce;
 		$payload = http_build_query($params);
 		$payload = base64_encode($payload);
@@ -28,3 +31,4 @@ class Discourse_SSO {
 		return http_build_query(array("sso" => $payload, "sig" => $sig));
 	}
 }
+?>
