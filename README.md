@@ -44,7 +44,7 @@ $userparams = array(
 );
 $q = $sso->buildLoginString($userparams);
 
-// To send back the data back, do:
+// To send the data back, do:
 // header('Location: http://discourse.example.com/session/sso_login?' . $q);
 // or similar
 ```
