@@ -33,6 +33,9 @@ class Discourse_SSO {
 		if(!isset($params["nonce"])) {
 			throw new Exception("Missing required parameter 'nonce'");
 		}
+		if(!isset($params["email"])) {
+			throw new Exception("Missing required parameter 'email'");
+		}
 		$payload = base64_encode(http_build_query($params));
 		$sig = hash_hmac("sha256", $payload, $this->sso_secret);
 		
