@@ -20,7 +20,7 @@ class Discourse_SSO {
 		$payload = urldecode($payload);
 		$query = array();
 		parse_str(base64_decode($payload), $query);
-		if(isset($query["nonce")) {
+		if(isset($query["nonce"])) {
 			return $query["nonce"];
 		} else {
 			throw new Exception("Nonce not found in payload!");
