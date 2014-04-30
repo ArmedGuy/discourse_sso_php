@@ -5,22 +5,23 @@
  * Version: 1.0
  * Author URI: https://meta.discourse.org/users/AdamCapriola/activity
  * Adapted From: https://github.com/ArmedGuy/discourse_sso_php
+ * Uses: https://meta.discourse.org/t/official-single-sign-on-for-discourse/13045
  *
  */
 
 // Customize these two variables
 $sso_secret = 'meow';
-$discourse_url = 'http://discourse.example.com';
+$discourse_url = 'http://discourse.example.com'; // Note: No trailing slash!
 
 //
 // Check if user is logged in to WordPress
 //
 
-// Not logged in to WordPress, redirect to WordPress login page with redirect back to SSO
-if ( !is_user_logged_in() ) {
+// Not logged in to WordPress, redirect to WordPress login page with redirect back to here
+if ( ! is_user_logged_in() ) {
 
-	// Build SSO redirect URL – Must redirect back here first since wp_login_url won't redirect to subdomain
-	$redirect = add_query_arg( 'session', true, get_page_link() );
+	// Add fresh parameter onto redirect back here
+	$redirect = add_query_arg( 'fresh', true );
 
 	// Build login URL
 	$login = wp_login_url( $redirect );
@@ -34,28 +35,28 @@ if ( !is_user_logged_in() ) {
 // Logged in to WordPress, now try to log in to Discourse with WordPress user information
 else {
 
-	// Redirect back to /session/sso if we just logged in to WordPress
-	if ( $_GET['session'] == true ) {
+	// Payload and signature
+	$payload = $_GET['sso'];
+	$sig = $_GET['sig'];
 
-		wp_redirect( $discourse_url . '/session/sso' ); // your Discourse install
-		exit;
+	// wp_sanitize_redirect strips %A0 from payload so we need to add it back if we are freshly logged in
+	if ( $_GET['fresh'] == true ) {
+
+		$payload = urldecode( $payload . '%0A' );
 
 	}
 
 	// Validate signature
-	$sso = new Discourse_SSO( $sso_secret ); // sso_secret
+	$sso = new Discourse_SSO( $sso_secret );
 
-	$payload = $_GET['sso'];
-	$sig = $_GET['sig'];
-
-	if ( !( $sso->validate( $payload, $sig ) ) ) {
+	if ( ! ( $sso->validate( $payload, $sig ) ) ) {
 
 		echo( 'Invalid Request' );
 		exit;
 
 	}
 
-	// Create nonce    
+	// Nonce    
 	$nonce = $sso->getNonce( $payload );
 
 	// User information
@@ -73,8 +74,8 @@ else {
 	// Build login string
 	$q = $sso->buildLoginString( $params );
 
-	// Redirect to Discourse login
-	wp_redirect( $discourse_url . '/session/sso_login?' . $q ); // your Discourse install
+	// Redirect back to Discourse
+	wp_redirect( $discourse_url . '/session/sso_login?' . $q );
 	exit;
 
 }
