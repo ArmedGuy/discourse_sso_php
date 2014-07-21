@@ -2,7 +2,7 @@
 /**
  * Template Name: Discourse SSO
  * Author: Adam Capriola
- * Version: 1.0
+ * Version: 1.1
  * Author URI: https://meta.discourse.org/users/AdamCapriola/activity
  * Adapted From: https://github.com/ArmedGuy/discourse_sso_php
  * Uses: https://meta.discourse.org/t/official-single-sign-on-for-discourse/13045
@@ -20,8 +20,8 @@ $discourse_url = 'http://discourse.example.com'; // Note: No trailing slash!
 // Not logged in to WordPress, redirect to WordPress login page with redirect back to here
 if ( ! is_user_logged_in() ) {
 
-	// Add fresh parameter onto redirect back here
-	$redirect = add_query_arg( 'fresh', true );
+	// Preserve sso and sig parameters
+	$redirect = add_query_arg();
 
 	// Build login URL
 	$login = wp_login_url( $redirect );
@@ -39,10 +39,21 @@ else {
 	$payload = $_GET['sso'];
 	$sig = $_GET['sig'];
 
-	// wp_sanitize_redirect strips %A0 from payload so we need to add it back if we are freshly logged in
-	if ( $_GET['fresh'] == true ) {
+	// Make sure %0A is at the end of the payload
+	if ( substr( urlencode( $payload ), -3 ) != '%0A' ) {
 
 		$payload = urldecode( $payload . '%0A' );
+
+	}
+	
+	// Check for helper class
+	if ( ! class_exists( 'Discourse_SSO' ) ) {
+
+		// Error message
+		echo( 'Helper class is not properly included.' );
+
+		// Terminate
+		exit;
 
 	}
 
@@ -50,8 +61,11 @@ else {
 	$sso = new Discourse_SSO( $sso_secret );
 
 	if ( ! ( $sso->validate( $payload, $sig ) ) ) {
-
-		echo( 'Invalid Request' );
+		
+		// Error message
+		echo( 'Invalid request.' );
+		
+		// Terminate
 		exit;
 
 	}
@@ -59,9 +73,10 @@ else {
 	// Nonce    
 	$nonce = $sso->getNonce( $payload );
 
-	// User information
+	// Current user info
 	get_currentuserinfo();
 
+	// Map information
 	$params = array(
 		'nonce' => $nonce,
 		'name' => $current_user->display_name,
