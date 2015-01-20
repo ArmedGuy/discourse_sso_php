@@ -1,21 +1,19 @@
 <?php
-class Discourse_SSO {
 
-	private $sso_secret;
-	
-	function __construct($secret) {
-		$this->sso_secret = $secret;
+
+class DiscourseSSOHelper {
+
+	private $secret;
+
+	public function setSecret($secret) {
+		$this->secret = $secret;
 	}
-	
-	public function validate($payload, $sig) {
+
+	public function validate($payload, $signature) {
 		$payload = urldecode($payload);
-		if(hash_hmac("sha256", $payload, $this->sso_secret) === $sig) {
-			return true;
-		} else {
-			return false;
-		}
+		return hash_hmac("sha256", $payload, $this->secret) === $signature;
 	}
-	
+
 	public function getNonce($payload) {
 		$payload = urldecode($payload);
 		$query = array();
@@ -37,9 +35,8 @@ class Discourse_SSO {
 			throw new Exception("Missing required parameter 'email'");
 		}
 		$payload = base64_encode(http_build_query($params));
-		$sig = hash_hmac("sha256", $payload, $this->sso_secret);
-		
+		$sig = hash_hmac("sha256", $payload, $this->secret);
+
 		return http_build_query(array("sso" => $payload, "sig" => $sig));
 	}
 }
-?>
