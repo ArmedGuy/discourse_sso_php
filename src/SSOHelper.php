@@ -9,7 +9,7 @@ class SSOHelper {
 	/**
 	 * @var
 	 */
-	protected $secret;
+	private $secret;
 
 	/**
 	 * @param $secret
