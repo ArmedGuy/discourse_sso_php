@@ -1,3 +1,6 @@
+# PLEASE NOTICE
+This repository is now only a mirror. Please visit https://github.com/cviebrock/discourse-php for updates and issues.
+
 # Discourse Single-Sign-On Helper for PHP
 
 This is a small class to help with providing an SSO source for Discourse forums. It provides 3 helper functions for validating incoming requests, extracting nonce, and building the returning query string.
