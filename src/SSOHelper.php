@@ -58,9 +58,7 @@ class SSOHelper {
 			'nonce' => $nonce,
 			'external_id' => $id,
 			'email' => $email
-		);
-
-		$parameters = array_merge($parameters, $extraParameters);
+		) + $extraParameters;
 
 		$payload = base64_encode(http_build_query($parameters));
 
