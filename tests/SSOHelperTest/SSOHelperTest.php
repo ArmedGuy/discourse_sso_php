@@ -67,6 +67,7 @@ class SSOHelperTest extends \PHPUnit_Framework_TestCase {
         $userId = 1234;
         $userEmail = 'sso@example.com';
         $extraParams = [
+            'nonce' => 'junk',
             'external_id' => 'junk',
             'email' => 'junk',
             'only_me' => 'gets_through'
