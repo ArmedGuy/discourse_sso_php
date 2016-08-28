@@ -1,4 +1,6 @@
 <?php
 namespace Cviebrock\DiscoursePHP\Exception;
 
-class PayloadException extends \Exception {}
+class PayloadException extends \Exception
+{
+}

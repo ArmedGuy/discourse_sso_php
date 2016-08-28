@@ -1,9 +1,10 @@
 <?php
 
-foreach (['.', '..', '../../..'] as $dir) {
+foreach (array('.', '..', '../../..') as $dir) {
     $autoload = "{$dir}/vendor/autoload.php";
     if (file_exists($autoload)) {
         include $autoload;
+
         return;
     }
 }
