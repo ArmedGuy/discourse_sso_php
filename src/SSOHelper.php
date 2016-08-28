@@ -44,6 +44,22 @@ class SSOHelper {
 
 		return $query['nonce'];
 	}
+	
+	/**
+	 * @param $payload
+	 * @return mixed
+	 * @throws PayloadException
+	 */
+	public function getReturnSSOURL($payload) {
+		$payload = urldecode($payload);
+		$query = array();
+		parse_str(base64_decode($payload), $query);
+		if (!array_key_exists('return_sso_url', $query)) {
+			throw new PayloadException('Return SSO URL not found in payload');
+		}
+
+		return $query['return_sso_url'];
+	}
 
 	/**
 	 * @param $nonce
